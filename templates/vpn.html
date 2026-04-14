@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Sessão Segura</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#0b1120] text-white p-6 min-h-screen flex items-center justify-center">
+    <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[3rem] p-8 text-center">
+        <h1 class="text-2xl font-black italic mb-8 text-blue-500">{{ app.name }}</h1>
+
+        {% if not is_ready %}
+            <p class="text-slate-400 text-sm mb-8">Esta chave expira em breve. Passe pelo anúncio para liberar.</p>
+            <a href="{{ app.link }}" class="bg-blue-600 block w-full py-5 rounded-2xl font-black">LIBERAR CONFIG</a>
+        {% else %}
+            <div id="secure-zone">
+                <div class="border-2 border-red-500 p-3 rounded-2xl mb-6 text-red-500 font-mono font-black text-2xl">
+                    <span id="timer">--:--</span>
+                </div>
+                <div class="text-left mb-6">
+                    <div id="key" class="bg-black/60 p-5 rounded-[2rem] border border-white/5 break-all font-mono text-[10px] text-slate-500 h-32 overflow-y-auto">
+                        {{ config }}
+                    </div>
+                </div>
+                <button onclick="copyKey()" class="bg-green-600 block w-full py-4 rounded-2xl font-black mb-3">COPIAR</button>
+                <button onclick="alert('Senha: {{ password }}')" class="text-slate-500 text-xs">Ver Senha</button>
+            </div>
+            <div id="expired" class="hidden text-red-500 font-bold">SESSÃO EXPIRADA</div>
+        {% endif %}
+    </div>
+
+    <script>
+        {% if is_ready %}
+        let timeLeft = {{ app.timer }};
+        const display = document.getElementById('timer');
+        
+        const countdown = setInterval(() => {
+            let m = Math.floor(timeLeft / 60);
+            let s = timeLeft % 60;
+            display.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                document.getElementById('secure-zone').classList.add('hidden');
+                document.getElementById('expired').classList.remove('hidden');
+            }
+            timeLeft--;
+        }, 1000);
+
+        function copyKey() {
+            navigator.clipboard.writeText(document.getElementById('key').innerText);
+            alert("Copiado!");
+        }
+        {% endif %}
+    </script>
+</body>
+</html>
